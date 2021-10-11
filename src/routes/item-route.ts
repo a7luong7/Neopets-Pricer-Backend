@@ -57,7 +57,7 @@ itemRouter.post('/', async (req:express.Request, res:express.Response) => {
   }
 
   const insertResponse = await addItems(insertRequest);
-  return res.status(200).json({ success: true, body: insertResponse });
+  return res.status(200).json({ insertResponse });
 });
 
 export default itemRouter;

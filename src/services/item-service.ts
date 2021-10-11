@@ -14,7 +14,9 @@ const convertItems = (items:Item[]) : ItemDTO[] => {
 
 export const getItems = async (itemNames:string[]) : Promise<ItemDTO[]> => {
   // const items:ItemDTO[] = [];
-  const items:Item[] = await ItemModel.find({});
+  const items:Item[] = await ItemModel.find({
+    name: { $in: itemNames },
+  });
   const convertedItems = convertItems(items);
   return convertedItems;
 };
@@ -26,8 +28,8 @@ export const addItems = async (items:ItemInsertRequest[]) : Promise<any> => {
     dateAdded: nowDate,
     dateUpdated: nowDate,
   });
-  return itemsToInsert;
-  // await ItemModel.insertMany(itemsToInsert);
+  // return itemsToInsert;
+  await ItemModel.insertMany(itemsToInsert);
   return <GenericResponse>{ isSuccess: true };
 };
 
