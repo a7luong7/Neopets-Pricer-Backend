@@ -37,8 +37,8 @@ export const insertOrUpdateItems = async (items:ItemInsertRequest[]) => {
   const nowDate = (new Date()).toISOString();
   const itemsToInsert = items.map((item) => <ItemInsertDTO>{
     ...item,
-    dateAdded: nowDate,
-    dateUpdated: nowDate,
+    // dateAdded: nowDate,
+    // dateUpdated: nowDate,
   });
 
   await ItemModel.bulkWrite(itemsToInsert.map((item) => ({

@@ -27,6 +27,11 @@ const itemSchema = new mongoose.Schema({
     type: Date,
     required: true,
   },
+}, {
+  timestamps: {
+    createdAt: 'dateAdded',
+    updatedAt: 'dateUpdated',
+  },
 });
 
 itemSchema.set('toJSON', {
