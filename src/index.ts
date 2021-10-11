@@ -1,13 +1,13 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import mongoose from 'mongoose';
 import itemRouter from './routes/item-route';
 import shopRouter from './routes/shop-route';
 
-dotenv.config();
+require('express-async-errors');
+const mongoose = require('mongoose');
 
-mongoose.connect(process.env.DB_URI as string, {
-});
+dotenv.config();
+mongoose.connect(process.env.DB_URI as string, { });
 
 const app = express();
 app.use(express.json());
@@ -24,7 +24,7 @@ app.get('*', (req, res) => {
 app.use((error:Error, req:express.Request, res:express.Response, next:Function) => {
   console.log(`Unhandled exception at: ${req.path}`);
   if (process.env.NODE_ENV !== 'production') {
-    return res.status(500).send(error);
+    return res.status(500).json({ error: error.message });
   }
   return res.status(500).json({ error: 'Internal server error' });
   next(error);
