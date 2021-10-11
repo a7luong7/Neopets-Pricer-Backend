@@ -1,5 +1,5 @@
 import express from 'express';
-import { getItems, addItems } from '../services/item-service';
+import { getItems, insertItems, insertOrUpdateItems } from '../services/item-service';
 import { ItemInsertRequest } from '../types';
 import { toItemInsertRequest } from '../utils';
 
@@ -56,7 +56,33 @@ itemRouter.post('/', async (req:express.Request, res:express.Response) => {
     return res.status(400).json({ error: e.message });
   }
 
-  const insertResponse = await addItems(insertRequest);
+  const insertResponse = await insertItems(insertRequest);
+  return res.status(200).json({ insertResponse });
+});
+
+itemRouter.put('/', async (req:express.Request, res:express.Response) => {
+  const reqBody = req.body;
+  const isBadRequest = !reqBody
+    || !(reqBody instanceof Array)
+    || reqBody.length === 0;
+  if (isBadRequest) {
+    return res.status(400).json({ error: 'Bad Request' });
+  }
+
+  let insertRequest = <ItemInsertRequest[]>[];
+  try {
+    insertRequest = reqBody.map((x) => toItemInsertRequest(x));
+    const duplicateNames = findDuplicates(insertRequest.map((x) => x.name));
+    if (duplicateNames.length !== 0) {
+      return res.status(400).json({
+        error: `Duplicate item names found: ${duplicateNames.join(', ')}`,
+      });
+    }
+  } catch (e:any) {
+    return res.status(400).json({ error: e.message });
+  }
+
+  const insertResponse = await insertOrUpdateItems(insertRequest);
   return res.status(200).json({ insertResponse });
 });
 

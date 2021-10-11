@@ -21,7 +21,7 @@ export const getItems = async (itemNames:string[]) : Promise<ItemDTO[]> => {
   return convertedItems;
 };
 
-export const addItems = async (items:ItemInsertRequest[]) : Promise<any> => {
+export const insertItems = async (items:ItemInsertRequest[]) : Promise<any> => {
   const nowDate = (new Date()).toISOString();
   const itemsToInsert = items.map((item) => <ItemInsertDTO>{
     ...item,
@@ -30,6 +30,24 @@ export const addItems = async (items:ItemInsertRequest[]) : Promise<any> => {
   });
   // return itemsToInsert;
   await ItemModel.insertMany(itemsToInsert);
+  return <GenericResponse>{ isSuccess: true };
+};
+
+export const insertOrUpdateItems = async (items:ItemInsertRequest[]) => {
+  const nowDate = (new Date()).toISOString();
+  const itemsToInsert = items.map((item) => <ItemInsertDTO>{
+    ...item,
+    dateAdded: nowDate,
+    dateUpdated: nowDate,
+  });
+
+  await ItemModel.bulkWrite(itemsToInsert.map((item) => ({
+    updateOne: {
+      filter: { name: item.name },
+      update: item,
+      upsert: true,
+    },
+  })));
   return <GenericResponse>{ isSuccess: true };
 };
 
