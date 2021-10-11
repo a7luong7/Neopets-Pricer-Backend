@@ -13,7 +13,6 @@ const convertItems = (items:Item[]) : ItemDTO[] => {
 };
 
 export const getItems = async (itemNames:string[]) : Promise<ItemDTO[]> => {
-  // const items:ItemDTO[] = [];
   const items:Item[] = await ItemModel.find({
     name: { $in: itemNames },
   });
@@ -23,23 +22,14 @@ export const getItems = async (itemNames:string[]) : Promise<ItemDTO[]> => {
 
 export const insertItems = async (items:ItemInsertRequest[]) : Promise<any> => {
   const nowDate = (new Date()).toISOString();
-  const itemsToInsert = items.map((item) => <ItemInsertDTO>{
-    ...item,
-    dateAdded: nowDate,
-    dateUpdated: nowDate,
-  });
-  // return itemsToInsert;
+  const itemsToInsert = items;
   await ItemModel.insertMany(itemsToInsert);
   return <GenericResponse>{ isSuccess: true };
 };
 
 export const insertOrUpdateItems = async (items:ItemInsertRequest[]) => {
   const nowDate = (new Date()).toISOString();
-  const itemsToInsert = items.map((item) => <ItemInsertDTO>{
-    ...item,
-    // dateAdded: nowDate,
-    // dateUpdated: nowDate,
-  });
+  const itemsToInsert = items;
 
   await ItemModel.bulkWrite(itemsToInsert.map((item) => ({
     updateOne: {

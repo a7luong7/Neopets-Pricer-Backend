@@ -34,56 +34,46 @@ itemRouter.post('/search', async (req:express.Request, res:express.Response) => 
   return res.status(200).json(items);
 });
 
-itemRouter.post('/', async (req:express.Request, res:express.Response) => {
-  const reqBody = req.body;
+const getItemInsertOrUpdateRequest = (reqBody:any) : [string, ItemInsertRequest[]] => {
   const isBadRequest = !reqBody
     || !(reqBody instanceof Array)
     || reqBody.length === 0;
   if (isBadRequest) {
-    return res.status(400).json({ error: 'Bad Request' });
+    return ['Bad Request', []];
   }
 
-  let insertRequest = <ItemInsertRequest[]>[];
+  let insertOrUpdateRequest = <ItemInsertRequest[]>[];
   try {
-    insertRequest = reqBody.map((x) => toItemInsertRequest(x));
-    const duplicateNames = findDuplicates(insertRequest.map((x) => x.name));
+    insertOrUpdateRequest = reqBody.map((x) => toItemInsertRequest(x));
+    const duplicateNames = findDuplicates(insertOrUpdateRequest.map((x) => x.name));
     if (duplicateNames.length !== 0) {
-      return res.status(400).json({
-        error: `Duplicate item names found: ${duplicateNames.join(', ')}`,
-      });
+      return [`Duplicate item names found: ${duplicateNames.join(', ')}`, []];
     }
   } catch (e:any) {
-    return res.status(400).json({ error: e.message });
+    return [e.message, []];
   }
 
-  const insertResponse = await insertItems(insertRequest);
+  return ['', insertOrUpdateRequest];
+};
+
+itemRouter.post('/', async (req:express.Request, res:express.Response) => {
+  const [reqError, insertOrUpdateRequest] = getItemInsertOrUpdateRequest(req.body);
+  if (reqError) {
+    return res.status(400).json({ error: reqError });
+  }
+
+  const insertResponse = await insertItems(insertOrUpdateRequest);
   return res.status(200).json({ insertResponse });
 });
 
 itemRouter.put('/', async (req:express.Request, res:express.Response) => {
-  const reqBody = req.body;
-  const isBadRequest = !reqBody
-    || !(reqBody instanceof Array)
-    || reqBody.length === 0;
-  if (isBadRequest) {
-    return res.status(400).json({ error: 'Bad Request' });
+  const [reqError, insertOrUpdateRequest] = getItemInsertOrUpdateRequest(req.body);
+  if (reqError) {
+    return res.status(400).json({ error: reqError });
   }
 
-  let insertRequest = <ItemInsertRequest[]>[];
-  try {
-    insertRequest = reqBody.map((x) => toItemInsertRequest(x));
-    const duplicateNames = findDuplicates(insertRequest.map((x) => x.name));
-    if (duplicateNames.length !== 0) {
-      return res.status(400).json({
-        error: `Duplicate item names found: ${duplicateNames.join(', ')}`,
-      });
-    }
-  } catch (e:any) {
-    return res.status(400).json({ error: e.message });
-  }
-
-  const insertResponse = await insertOrUpdateItems(insertRequest);
-  return res.status(200).json({ insertResponse });
+  const insertOrUpdateResponse = await insertOrUpdateItems(insertOrUpdateRequest);
+  return res.status(200).json({ insertOrUpdateResponse });
 });
 
 export default itemRouter;
