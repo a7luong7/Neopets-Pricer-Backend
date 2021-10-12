@@ -23,11 +23,9 @@ const itemSchema = new mongoose.Schema({
   },
   dateAdded: {
     type: Date,
-    required: true,
   },
   dateUpdated: {
     type: Date,
-    required: true,
   },
 }, {
   timestamps: {

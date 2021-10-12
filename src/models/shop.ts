@@ -17,11 +17,14 @@ const shopSchema = new mongoose.Schema({
   },
   dateAdded: {
     type: Date,
-    required: true,
   },
   dateUpdated: {
     type: Date,
-    required: true,
+  },
+}, {
+  timestamps: {
+    createdAt: 'dateAdded',
+    updatedAt: 'dateUpdated',
   },
 });
 
