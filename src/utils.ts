@@ -1,4 +1,4 @@
-import { ItemInsertRequest } from './types';
+import { ItemInsertRequest, ShopInsertRequest } from './types';
 
 const isString = (param : unknown) : param is string => typeof param === 'string' || param instanceof String;
 const parseString = (param : unknown, name : string) : string => {
@@ -32,6 +32,20 @@ export const toItemInsertRequest = (object : ItemInsertRequestFields) : ItemInse
     jellyID: parseNumber(object.jellyID, 'jellyID'),
     price: object.price == null ? undefined : parseNumber(object.price, 'price'),
     isActive: parseBoolean(object.isActive, 'isActive'),
+  };
+  return request;
+};
+
+type ShopInsertRequestFields = {
+  title: unknown,
+  neoID: unknown,
+  jellyID:unknown,
+};
+export const toShopInsertRequest = (object : ShopInsertRequestFields) : ShopInsertRequest => {
+  const request: ShopInsertRequest = {
+    title: parseString(object.title, 'title'),
+    neoID: parseNumber(object.neoID, 'neoID'),
+    jellyID: parseNumber(object.jellyID, 'jellyID'),
   };
   return request;
 };

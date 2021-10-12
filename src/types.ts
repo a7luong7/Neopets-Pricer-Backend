@@ -27,5 +27,5 @@ export interface Shop {
   dateUpdated: string
 }
 
-export type ShopInsertRequest = Omit<Item, 'id' | 'dateAdded' | 'dateUpdated'>;
-export type ShopDTO = Omit<Item, 'id'>;
+export type ShopInsertRequest = Omit<Shop, 'id' | 'dateAdded' | 'dateUpdated'>;
+export type ShopDTO = Omit<Shop, 'id'>;

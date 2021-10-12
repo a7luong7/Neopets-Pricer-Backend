@@ -9,4 +9,8 @@ shopRouter.get('/', async (req:express.Request, res:express.Response) => {
   // res.status(404).send('not implemented yet');
 });
 
+shopRouter.post('/', async (req:express.Request, res:express.Response) => {
+  res.status(404).send('not implemented yet');
+});
+
 export default shopRouter;
