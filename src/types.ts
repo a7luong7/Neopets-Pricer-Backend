@@ -17,3 +17,15 @@ export interface Item {
 export type ItemInsertRequest = Omit<Item, 'id' | 'dateAdded' | 'dateUpdated'>;
 export type ItemInsertDTO = Omit<Item, 'id'>;
 export type ItemDTO = Pick<Item, 'name' | 'price'>;
+
+export interface Shop {
+  id: string,
+  title: string,
+  neoID: number,
+  jellyID: number,
+  dateAdded: string,
+  dateUpdated: string
+}
+
+export type ShopInsertRequest = Omit<Item, 'id' | 'dateAdded' | 'dateUpdated'>;
+export type ShopDTO = Omit<Item, 'id'>;

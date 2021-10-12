@@ -7,7 +7,9 @@ const itemSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  shopID: {},
+  shopID: {
+    type: Number,
+  },
   jellyID: {
     type: Number,
     required: true,
