@@ -29,7 +29,6 @@ itemRouter.post('/search', async (req:express.Request, res:express.Response) => 
   }
 
   const itemNames:string[] = itemNamesFromReq;
-  // console.log('item names', itemNames);
   const items = await getItems(itemNames);
   return res.status(200).json(items);
 });
