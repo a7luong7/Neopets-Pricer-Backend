@@ -28,7 +28,7 @@ const findDuplicates = (requestItems:ShopInsertRequest[]) : string[] => {
   for (let i = 0; i < sortedItems.length - 1; i++) {
     const item = sortedItems[i];
     const next = sortedItems[i + 1];
-    if (item.title === next.title || item.neoID === next.neoID || item.jellyID === next.neoID) {
+    if (item.title === next.title || item.neoID === next.neoID || item.jellyID === next.jellyID) {
       duplicates.push(sortedItems[i].title);
     }
   }
