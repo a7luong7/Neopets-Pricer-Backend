@@ -84,4 +84,14 @@ shopRouter.get('/jelly', async (req:express.Request, res:express.Response) => {
   return res.status(200).json({ html: jellyShops });
 });
 
+shopRouter.post('/update', async (req:express.Request, res:express.Response) => {
+  const jellyShops = await getJellyShops();
+  if (!jellyShops || jellyShops.length === 0) {
+    return res.status(500).json({ error: 'Could not retrieve shops from jellyneo' });
+  }
+
+  const insertOrUpdateResponse = await insertOrUpdateShops(jellyShops);
+  return res.status(200).json({ insertOrUpdateResponse });
+});
+
 export default shopRouter;
