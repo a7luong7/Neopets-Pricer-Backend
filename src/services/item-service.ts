@@ -20,15 +20,13 @@ export const getItems = async (itemNames:string[]) : Promise<ItemDTO[]> => {
   return convertedItems;
 };
 
-export const insertItems = async (items:ItemInsertRequest[]) : Promise<any> => {
-  const nowDate = (new Date()).toISOString();
+export const insertItems = async (items:ItemInsertRequest[]) : Promise<GenericResponse> => {
   const itemsToInsert = items;
   await ItemModel.insertMany(itemsToInsert);
   return <GenericResponse>{ isSuccess: true };
 };
 
-export const insertOrUpdateItems = async (items:ItemInsertRequest[]) => {
-  const nowDate = (new Date()).toISOString();
+export const insertOrUpdateItems = async (items:ItemInsertRequest[]) : Promise<GenericResponse> => {
   const itemsToInsert = items;
 
   await ItemModel.bulkWrite(itemsToInsert.map((item) => ({
