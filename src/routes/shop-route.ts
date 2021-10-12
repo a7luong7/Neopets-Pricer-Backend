@@ -1,5 +1,7 @@
 import express from 'express';
-import { getShops, insertShops, insertOrUpdateShops } from '../services/shop-service';
+import {
+  getShops, insertShops, insertOrUpdateShops, getJellyShops,
+} from '../services/shop-service';
 import { toShopInsertRequest } from '../utils';
 import { ShopInsertRequest } from '../types';
 
@@ -75,6 +77,11 @@ shopRouter.put('/', async (req:express.Request, res:express.Response) => {
 
   const insertOrUpdateResponse = await insertOrUpdateShops(insertOrUpdateRequest);
   return res.status(200).json({ insertOrUpdateResponse });
+});
+
+shopRouter.get('/jelly', async (req:express.Request, res:express.Response) => {
+  const jellyShops = await getJellyShops();
+  return res.status(200).json({ html: jellyShops });
 });
 
 export default shopRouter;
