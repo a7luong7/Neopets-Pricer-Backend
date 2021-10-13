@@ -68,8 +68,9 @@ itemRouter.post('/search/:shopID', async (req:express.Request, res:express.Respo
 
   // Attempt to get items from cache
   const itemNamesNotInCache = [];
+  const cachedItems = priceCache.mget(itemNames);
   itemNames.forEach((itemName) => {
-    const cachedPrice = priceCache.get(itemName);
+    const cachedPrice = cachedItems[itemName];
     if (cachedPrice) {
       itemResult.push(cachedPrice);
     } else {
@@ -81,7 +82,9 @@ itemRouter.post('/search/:shopID', async (req:express.Request, res:express.Respo
   if (itemNamesNotInCache.length > 0) {
     const dbItems = await getItems(shop.jellyID, itemNames);
     itemResult = itemResult.concat(dbItems);
-    dbItems.forEach((item) => priceCache.set(item.name, item, priceCacheTTL));
+    // Store db result in cache
+    const itemsToStore = dbItems.map((item) => ({ key: item.name, val: item, ttl: priceCacheTTL }));
+    priceCache.mset(itemsToStore);
   }
 
   console.log(`Lookup for ${itemNamesFromReq.length} items took: ${getElapsedTime(startTime)} ms`);
