@@ -2,7 +2,7 @@ import express from 'express';
 import {
   getItems, insertItems, insertOrUpdateItems, getJellyItems, updateItemsFromJelly, getJellyItem,
 } from '../services/item-service';
-import { getShops } from '../services/shop-service';
+import { getShop, getShops } from '../services/shop-service';
 import { ItemInsertRequest } from '../types';
 import { toItemInsertRequest } from '../utils';
 
@@ -22,17 +22,28 @@ const findDuplicates = (names:string[]) : string[] => {
   return [...new Set(duplicates)];
 };
 
-itemRouter.post('/search', async (req:express.Request, res:express.Response) => {
+itemRouter.post('/search/:shopID', async (req:express.Request, res:express.Response) => {
+  const shopIDStr = req.params.shopID;
+  if (!shopIDStr || Number.isNaN(Number(shopIDStr))) {
+    return res.status(400).json({ error: 'Invalid shop ID' });
+  }
+  const shopID = Number(shopIDStr);
+
   const itemNamesFromReq:any = req.body.itemNames;
   const isBadRequest = !itemNamesFromReq
     || !(itemNamesFromReq instanceof Array)
     || itemNamesFromReq.length === 0;
   if (isBadRequest) {
-    return res.status(400).json({ error: 'Bad Request' });
+    return res.status(400).json({ error: 'Invalid item name list' });
+  }
+
+  const shop = await getShop(shopID);
+  if (!shop) {
+    return res.status(500).json({ error: 'Shop currently not supported' });
   }
 
   const itemNames:string[] = itemNamesFromReq;
-  const items = await getItems(itemNames);
+  const items = await getItems(shopID, itemNames);
   return res.status(200).json(items);
 });
 
@@ -89,7 +100,7 @@ itemRouter.get('/jelly/:id', async (req:express.Request, res:express.Response) =
 });
 
 itemRouter.get('/jelly', async (req:express.Request, res:express.Response) => {
-  const jellyItems = await getJellyItems(1, 1);
+  const jellyItems = await getJellyItems(1, 5);
   return res.status(200).json({ html: jellyItems });
 });
 

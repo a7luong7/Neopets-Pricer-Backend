@@ -1,5 +1,14 @@
 import { ItemInsertRequest, ShopInsertRequest } from './types';
 
+export const wait = (ms:number) => new Promise(
+  (resolve) => setTimeout(resolve, ms),
+);
+
+export const waitRandom = (minMs:number, maxMs:number) => {
+  const ms = Math.floor(Math.random() * (maxMs - minMs + 1) + minMs);
+  return wait(ms);
+};
+
 const isString = (param : unknown) : param is string => typeof param === 'string' || param instanceof String;
 const parseString = (param : unknown, name : string) : string => {
   if (!param || !isString(param)) { throw new Error(`Incorrect or missing field: ${name}`); }

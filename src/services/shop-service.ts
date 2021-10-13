@@ -7,6 +7,13 @@ import {
   ShopInsertRequest,
 } from '../types';
 
+export const getShop = async (jellyID:number) : Promise<Shop | null> => {
+  const shop:Shop = await ShopModel.findOne({
+    jellyID,
+  });
+  return shop;
+};
+
 export const getShops = async () : Promise<Shop[]> => {
   const shops:Shop[] = await ShopModel.find();
   return shops;
