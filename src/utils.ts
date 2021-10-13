@@ -1,4 +1,11 @@
-import { ItemInsertRequest, ShopInsertRequest } from './types';
+import { ItemInsertRequest, ShopInsertRequest, ShopUpdateActiveStatusRequest } from './types';
+
+export const addDays = (dateString:string, days:number) => {
+  const dateMS = Date.parse(dateString);
+  const newDate = new Date(dateMS);
+  newDate.setDate(newDate.getDate() + days);
+  return newDate;
+};
 
 export const wait = (ms:number) => new Promise(
   (resolve) => setTimeout(resolve, ms),
@@ -55,6 +62,19 @@ export const toShopInsertRequest = (object : ShopInsertRequestFields) : ShopInse
   const request: ShopInsertRequest = {
     title: parseString(object.title, 'title'),
     neoID: parseNumber(object.neoID, 'neoID'),
+    jellyID: parseNumber(object.jellyID, 'jellyID'),
+    isActive: parseBoolean(object.isActive, 'isActive'),
+  };
+  return request;
+};
+
+type ShopUpdateActiveStatusRequestFields = {
+  jellyID: unknown,
+  isActive: unknown
+};
+export const toShopUpdateActiveStatusRequest = (object: ShopUpdateActiveStatusRequestFields)
+: ShopUpdateActiveStatusRequest => {
+  const request: ShopUpdateActiveStatusRequest = {
     jellyID: parseNumber(object.jellyID, 'jellyID'),
     isActive: parseBoolean(object.isActive, 'isActive'),
   };

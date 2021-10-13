@@ -3,7 +3,7 @@ import {
   getShops, insertShops, insertOrUpdateShops, getJellyShops, getActiveShops,
   updateShopActiveStatus,
 } from '../services/shop-service';
-import { toShopInsertRequest } from '../utils';
+import { toShopInsertRequest, toShopUpdateActiveStatusRequest } from '../utils';
 import { ShopInsertRequest } from '../types';
 
 const shopRouter = express.Router();
@@ -15,12 +15,24 @@ shopRouter.get('/', async (req:express.Request, res:express.Response) => {
 
 shopRouter.get('/active', async (req:express.Request, res:express.Response) => {
   const shops = await getActiveShops();
-  return res.status(200).json(shops);
+  const shopsDTO = shops.map((x) => ({
+    title: x.title,
+    dateUpdated: x.dateUpdated,
+  }));
+  return res.status(200).json(shopsDTO);
 });
 
 shopRouter.post('/active', async (req:express.Request, res:express.Response) => {
   const reqBody = req.body;
-  const response = await updateShopActiveStatus(reqBody);
+
+  const isBadRequest = !reqBody
+    || !(reqBody instanceof Array)
+    || reqBody.length === 0;
+  if (isBadRequest) {
+    return res.status(400).json({ error: 'Bad Request' });
+  }
+  const updateActiveStatusRequest = reqBody.map((x) => toShopUpdateActiveStatusRequest(x));
+  const response = await updateShopActiveStatus(updateActiveStatusRequest);
   return res.status(200).json(response);
 });
 

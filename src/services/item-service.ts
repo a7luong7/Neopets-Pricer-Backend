@@ -13,7 +13,7 @@ import sampleItem from '../data/sample-item';
 import { waitRandom } from '../utils';
 
 const waitMsMin = 1500;
-const waitMsMax = 3000;
+const waitMsMax = 2500;
 
 const convertItems = (items:Item[]) : ItemDTO[] => {
   const dtoList = items.map((x) => ({
@@ -193,7 +193,6 @@ export const updateItemsFromJelly = async (shop:Shop) : Promise<GenericResponse>
     const jellyItemsPage = await getJellyItems(shop.jellyID, page);
     if (!jellyItemsPage || jellyItemsPage.length === 0) {
       break; // End of pages
-      // return <GenericResponse>{ isSuccess: false, message: 'Could not get items from jellyneo' };
     }
     jellyItems = jellyItems.concat(jellyItemsPage);
     page++;

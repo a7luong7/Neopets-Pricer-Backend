@@ -1,10 +1,15 @@
+/* eslint-disable no-await-in-loop */
+/* eslint-disable no-plusplus */
 import express from 'express';
+import shopModel from '../models/shop';
 import {
   getItems, insertItems, insertOrUpdateItems, getJellyItems, updateItemsFromJelly, getJellyItem,
 } from '../services/item-service';
-import { getShop, getShops } from '../services/shop-service';
+import {
+  getActiveShops, getShop, getShops, insertOrUpdateShops,
+} from '../services/shop-service';
 import { ItemInsertRequest } from '../types';
-import { toItemInsertRequest } from '../utils';
+import { addDays, toItemInsertRequest } from '../utils';
 
 require('express-async-errors');
 
@@ -107,23 +112,32 @@ itemRouter.get('/jelly', async (req:express.Request, res:express.Response) => {
   return res.status(200).json({ html: jellyItems });
 });
 
-itemRouter.post('/update/:shopID', async (req:express.Request, res:express.Response) => {
-  const { shopID } = req.params;
-  if (!shopID || Number.isNaN(Number(shopID))) {
-    return res.status(404).json({ error: 'Please provide the jellyneo ID for the shop to be updated' });
+itemRouter.post('/update', async (req:express.Request, res:express.Response) => {
+  const activeShops = await getActiveShops();
+  const now = new Date();
+  const shopsNeedingUpdate = activeShops
+    .filter((x) => {
+      const nextUpdate = addDays(x.dateUpdated, 14);
+      return nextUpdate < now;
+    });
+  // return res.status(200).json(shopsNeedingUpdate);
+
+  if (shopsNeedingUpdate.length === 0) {
+    return res.status(200).json({ error: 'No shops need to be updated' });
   }
 
-  const shops = await getShops();
-  const shop = shops.find((x) => x.jellyID === Number(shopID));
-  if (!shop) {
-    return res.status(404).json({ error: `Shop with jelly ID: ${shopID} not found` });
-  }
-  if (!shop.isActive) {
-    return res.status(404).json({ error: `Item lookup for shop: ${shop.title} is not supported yet` });
+  for (let i = 0; i < shopsNeedingUpdate.length; i++) {
+    const shop = shopsNeedingUpdate[i];
+    console.log('Updating items for shop: ', shop.title);
+    const updateItemsResult = await updateItemsFromJelly(shop);
+    if (!updateItemsResult.isSuccess) { return res.status(200).json(updateItemsResult); }
+    const updateShopResult = await insertOrUpdateShops([shop]);
+    if (!updateShopResult.isSuccess) { return res.status(200).json(updateShopResult); }
   }
 
-  console.log('Updating items for shop: ', shop.title);
-  const result = await updateItemsFromJelly(shop);
-  return res.status(200).json({ result });
+  return res.status(200).json({
+    isSuccess: true,
+    message: `${shopsNeedingUpdate.length} shops updated`,
+  });
 });
 export default itemRouter;
