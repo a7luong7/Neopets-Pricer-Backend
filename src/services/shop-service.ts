@@ -1,7 +1,6 @@
 import cheerio from 'cheerio';
 import axios from 'axios';
 import ShopModel from '../models/shop';
-import sampleShops from '../data/sample-shops';
 import {
   GenericResponse,
   Shop,

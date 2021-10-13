@@ -1,5 +1,8 @@
 import express from 'express';
-import { getItems, insertItems, insertOrUpdateItems } from '../services/item-service';
+import {
+  getItems, insertItems, insertOrUpdateItems, getJellyItems, updateItemsFromJelly, getJellyItem,
+} from '../services/item-service';
+import { getShops } from '../services/shop-service';
 import { ItemInsertRequest } from '../types';
 import { toItemInsertRequest } from '../utils';
 
@@ -75,4 +78,34 @@ itemRouter.put('/', async (req:express.Request, res:express.Response) => {
   return res.status(200).json({ insertOrUpdateResponse });
 });
 
+itemRouter.get('/jelly/:id', async (req:express.Request, res:express.Response) => {
+  const jellyIDStr = req.params.id;
+  if (!jellyIDStr || Number.isNaN(Number(jellyIDStr))) {
+    return res.status(400).json({ error: 'Invalid jellyneo item ID' });
+  }
+
+  const jellyItem = await getJellyItem(Number(jellyIDStr));
+  return res.status(200).json({ html: jellyItem });
+});
+
+itemRouter.get('/jelly', async (req:express.Request, res:express.Response) => {
+  const jellyItems = await getJellyItems(1, 1);
+  return res.status(200).json({ html: jellyItems });
+});
+
+itemRouter.post('/update/:id', async (req:express.Request, res:express.Response) => {
+  const shopID = req.params.id;
+  if (!shopID || Number.isNaN(Number(shopID))) {
+    return res.status(404).json({ error: 'Please provide the jellyneo ID for the shop to be updated' });
+  }
+
+  const shops = await getShops();
+  const shop = shops.find((x) => x.jellyID === Number(shopID));
+  if (!shop) {
+    return res.status(404).json({ error: `Shop with jelly ID: ${shopID} not found` });
+  }
+
+  const result = await updateItemsFromJelly(shop);
+  return res.status(200).json({ result });
+});
 export default itemRouter;
