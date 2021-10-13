@@ -47,6 +47,10 @@ itemRouter.post('/search/:shopID', async (req:express.Request, res:express.Respo
     return res.status(400).json({ error: 'Invalid item name list' });
   }
 
+  if (itemNamesFromReq.length > 200) {
+    return res.status(400).json({ error: 'Too many items in list. Please send 200 or fewer item names.' });
+  }
+
   const startTime = new Date();
 
   let shop = shopCache.get(shopNeoID);
@@ -78,7 +82,7 @@ itemRouter.post('/search/:shopID', async (req:express.Request, res:express.Respo
     }
   });
 
-  console.log(`${itemNamesNotInCache.length} items not in cache`);
+  // console.log(`${itemNamesNotInCache.length} items not in cache`);
   if (itemNamesNotInCache.length > 0) {
     const dbItems = await getItems(shop.jellyID, itemNames);
     itemResult = itemResult.concat(dbItems);
