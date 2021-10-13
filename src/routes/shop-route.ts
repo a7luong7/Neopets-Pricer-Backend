@@ -1,6 +1,7 @@
 import express from 'express';
 import {
-  getShops, insertShops, insertOrUpdateShops, getJellyShops,
+  getShops, insertShops, insertOrUpdateShops, getJellyShops, getActiveShops,
+  updateShopActiveStatus,
 } from '../services/shop-service';
 import { toShopInsertRequest } from '../utils';
 import { ShopInsertRequest } from '../types';
@@ -10,7 +11,17 @@ const shopRouter = express.Router();
 shopRouter.get('/', async (req:express.Request, res:express.Response) => {
   const shops = await getShops();
   return res.status(200).json(shops);
-  // res.status(404).send('not implemented yet');
+});
+
+shopRouter.get('/active', async (req:express.Request, res:express.Response) => {
+  const shops = await getActiveShops();
+  return res.status(200).json(shops);
+});
+
+shopRouter.post('/active', async (req:express.Request, res:express.Response) => {
+  const reqBody = req.body;
+  const response = await updateShopActiveStatus(reqBody);
+  return res.status(200).json(response);
 });
 
 const findDuplicates = (requestItems:ShopInsertRequest[]) : string[] => {

@@ -5,6 +5,7 @@ import {
   GenericResponse,
   Shop,
   ShopInsertRequest,
+  ShopUpdateActiveStatusRequest,
 } from '../types';
 
 export const getShop = async (neoID:number) : Promise<Shop | null> => {
@@ -17,6 +18,29 @@ export const getShop = async (neoID:number) : Promise<Shop | null> => {
 export const getShops = async () : Promise<Shop[]> => {
   const shops:Shop[] = await ShopModel.find();
   return shops;
+};
+
+export const getActiveShops = async () : Promise<Shop[]> => {
+  const shops:Shop[] = await ShopModel.find({
+    isActive: true,
+  });
+  return shops;
+};
+
+export const updateShopActiveStatus = async (requests:ShopUpdateActiveStatusRequest[])
+: Promise<GenericResponse> => {
+  const jellyIDs = requests.map((x) => x.jellyID);
+  const shops = await ShopModel.find({
+    jellyID: { $in: jellyIDs },
+  });
+  requests.forEach((request) => {
+    const shop = shops.find((x) => x.jellyID === request.jellyID);
+    if (!shop) return;
+
+    shop.isActive = request.isActive;
+  });
+  await ShopModel.bulkSave(shops);
+  return <GenericResponse>{ isSuccess: true };
 };
 
 export const insertShops = async (shops:ShopInsertRequest[]) : Promise<GenericResponse> => {

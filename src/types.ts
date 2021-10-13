@@ -30,3 +30,4 @@ export interface Shop {
 
 export type ShopInsertRequest = Omit<Shop, 'id' | 'dateAdded' | 'dateUpdated'>;
 export type ShopDTO = Omit<Shop, 'id'>;
+export type ShopUpdateActiveStatusRequest = Pick<Shop, 'jellyID' | 'isActive'>;
