@@ -1,5 +1,11 @@
 import { ItemInsertRequest, ShopInsertRequest, ShopUpdateActiveStatusRequest } from './types';
 
+// Returns elapsed time in ms
+export const getElapsedTime = (date:Date) : number => {
+  const timeDiff = (new Date()).valueOf() - date.valueOf();
+  return timeDiff;
+};
+
 export const addDays = (dateString:string, days:number) => {
   const dateMS = Date.parse(dateString);
   const newDate = new Date(dateMS);

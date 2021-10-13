@@ -1,15 +1,20 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-plusplus */
 import express from 'express';
-import shopModel from '../models/shop';
 import {
   getItems, insertItems, insertOrUpdateItems, getJellyItems, updateItemsFromJelly, getJellyItem,
 } from '../services/item-service';
-import {
-  getActiveShops, getShop, getShops, insertOrUpdateShops,
-} from '../services/shop-service';
-import { ItemInsertRequest } from '../types';
-import { addDays, toItemInsertRequest } from '../utils';
+import { getActiveShops, getShop, insertOrUpdateShops } from '../services/shop-service';
+import { ItemInsertRequest, ItemDTO } from '../types';
+import { addDays, toItemInsertRequest, getElapsedTime } from '../utils';
+
+const NodeCache = require('node-cache');
+
+const priceCacheTTL = 60 * 60; // Time to live (in seconds)
+const priceCache = new NodeCache({ stdTTL: priceCacheTTL });
+
+const shopCacheTTL = 24 * 60 * 60; // Shop data itself should barely update
+const shopCache = new NodeCache({ stdTTL: shopCacheTTL });
 
 require('express-async-errors');
 
@@ -42,7 +47,15 @@ itemRouter.post('/search/:shopID', async (req:express.Request, res:express.Respo
     return res.status(400).json({ error: 'Invalid item name list' });
   }
 
-  const shop = await getShop(shopNeoID);
+  const startTime = new Date();
+
+  let shop = shopCache.get(shopNeoID);
+  if (!shop) {
+    shop = await getShop(shopNeoID);
+    if (shop) {
+      shopCache.set(shopNeoID, shop, shopCacheTTL);
+    }
+  }
   if (!shop) {
     return res.status(500).json({ error: 'Could not find shop with neo ID' });
   }
@@ -51,8 +64,28 @@ itemRouter.post('/search/:shopID', async (req:express.Request, res:express.Respo
   }
 
   const itemNames:string[] = itemNamesFromReq;
-  const items = await getItems(shop.jellyID, itemNames);
-  return res.status(200).json(items);
+  let itemResult:ItemDTO[] = [];
+
+  // Attempt to get items from cache
+  const itemNamesNotInCache = [];
+  itemNames.forEach((itemName) => {
+    const cachedPrice = priceCache.get(itemName);
+    if (cachedPrice) {
+      itemResult.push(cachedPrice);
+    } else {
+      itemNamesNotInCache.push(itemName);
+    }
+  });
+
+  console.log(`${itemNamesNotInCache.length} items not in cache`);
+  if (itemNamesNotInCache.length > 0) {
+    const dbItems = await getItems(shop.jellyID, itemNames);
+    itemResult = itemResult.concat(dbItems);
+    dbItems.forEach((item) => priceCache.set(item.name, item, priceCacheTTL));
+  }
+
+  console.log(`Lookup for ${itemNamesFromReq.length} items took: ${getElapsedTime(startTime)} ms`);
+  return res.status(200).json(itemResult);
 });
 
 const getItemInsertOrUpdateRequest = (reqBody:any) : [string, ItemInsertRequest[]] => {
