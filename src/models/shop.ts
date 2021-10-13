@@ -15,6 +15,10 @@ const shopSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  isActive: {
+    type: Boolean,
+    default: false,
+  },
   dateAdded: {
     type: Date,
   },

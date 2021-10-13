@@ -23,6 +23,7 @@ export interface Shop {
   title: string,
   neoID: number,
   jellyID: number,
+  isActive: boolean,
   dateAdded: string,
   dateUpdated: string
 }

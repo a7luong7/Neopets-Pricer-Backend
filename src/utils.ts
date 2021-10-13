@@ -17,13 +17,13 @@ const parseString = (param : unknown, name : string) : string => {
 
 const isNumber = (param : unknown) : param is number => typeof param === 'number' || param instanceof Number;
 const parseNumber = (param : unknown, name : string) : number => {
-  if (!param || !isNumber(param)) { throw new Error(`Incorrect or missing field: ${name}`); }
+  if (param == null || !isNumber(param)) { throw new Error(`Incorrect or missing field: ${name}`); }
   return param;
 };
 
 const isBoolean = (param : unknown) : param is boolean => typeof param === 'boolean' || param instanceof Boolean;
 const parseBoolean = (param : unknown, name : string) : boolean => {
-  if (!param || !isBoolean(param)) { throw new Error(`Incorrect or missing field: ${name}`); }
+  if (param == null || !isBoolean(param)) { throw new Error(`Incorrect or missing field: ${name}`); }
   return param;
 };
 
@@ -49,12 +49,14 @@ type ShopInsertRequestFields = {
   title: unknown,
   neoID: unknown,
   jellyID:unknown,
+  isActive:unknown,
 };
 export const toShopInsertRequest = (object : ShopInsertRequestFields) : ShopInsertRequest => {
   const request: ShopInsertRequest = {
     title: parseString(object.title, 'title'),
     neoID: parseNumber(object.neoID, 'neoID'),
     jellyID: parseNumber(object.jellyID, 'jellyID'),
+    isActive: parseBoolean(object.isActive, 'isActive'),
   };
   return request;
 };

@@ -7,9 +7,9 @@ import {
   ShopInsertRequest,
 } from '../types';
 
-export const getShop = async (jellyID:number) : Promise<Shop | null> => {
+export const getShop = async (neoID:number) : Promise<Shop | null> => {
   const shop:Shop = await ShopModel.findOne({
-    jellyID,
+    neoID,
   });
   return shop;
 };
@@ -24,11 +24,25 @@ export const insertShops = async (shops:ShopInsertRequest[]) : Promise<GenericRe
   return <GenericResponse>{ isSuccess: true };
 };
 
+const getShopSet = (shop:ShopInsertRequest) => {
+  const shopSet:any = {
+    title: shop.title,
+    neoID: shop.neoID,
+    jellyID: shop.jellyID,
+  };
+  if (shop.isActive === true || shop.isActive === false) {
+    shopSet.isActive = shop.isActive;
+  }
+  console.log('shop set', shopSet);
+  return shopSet;
+};
 export const insertOrUpdateShops = async (shops:ShopInsertRequest[]) => {
   await ShopModel.bulkWrite(shops.map((shop) => ({
     updateOne: {
       filter: { neoID: shop.neoID },
-      update: shop,
+      update: {
+        $set: getShopSet(shop),
+      },
       upsert: true,
     },
   })));
@@ -78,6 +92,7 @@ const parseJellyShopsHTML = (html:string) : any => {
         title: shopName,
         neoID,
         jellyID,
+        // isActive: false,
       };
       shops.push(shop);
     });

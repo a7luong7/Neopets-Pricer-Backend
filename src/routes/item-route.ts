@@ -23,11 +23,11 @@ const findDuplicates = (names:string[]) : string[] => {
 };
 
 itemRouter.post('/search/:shopID', async (req:express.Request, res:express.Response) => {
-  const shopIDStr = req.params.shopID;
-  if (!shopIDStr || Number.isNaN(Number(shopIDStr))) {
+  const shopNeoIDStr = req.params.shopID;
+  if (!shopNeoIDStr || Number.isNaN(Number(shopNeoIDStr))) {
     return res.status(400).json({ error: 'Invalid shop ID' });
   }
-  const shopID = Number(shopIDStr);
+  const shopNeoID = Number(shopNeoIDStr);
 
   const itemNamesFromReq:any = req.body.itemNames;
   const isBadRequest = !itemNamesFromReq
@@ -37,13 +37,16 @@ itemRouter.post('/search/:shopID', async (req:express.Request, res:express.Respo
     return res.status(400).json({ error: 'Invalid item name list' });
   }
 
-  const shop = await getShop(shopID);
+  const shop = await getShop(shopNeoID);
   if (!shop) {
-    return res.status(500).json({ error: 'Shop currently not supported' });
+    return res.status(500).json({ error: 'Could not find shop with neo ID' });
+  }
+  if (!shop.isActive) {
+    return res.status(404).json({ error: `Item lookup for shop: ${shop.title} is not supported yet` });
   }
 
   const itemNames:string[] = itemNamesFromReq;
-  const items = await getItems(shopID, itemNames);
+  const items = await getItems(shop.jellyID, itemNames);
   return res.status(200).json(items);
 });
 
@@ -104,8 +107,8 @@ itemRouter.get('/jelly', async (req:express.Request, res:express.Response) => {
   return res.status(200).json({ html: jellyItems });
 });
 
-itemRouter.post('/update/:id', async (req:express.Request, res:express.Response) => {
-  const shopID = req.params.id;
+itemRouter.post('/update/:shopID', async (req:express.Request, res:express.Response) => {
+  const { shopID } = req.params;
   if (!shopID || Number.isNaN(Number(shopID))) {
     return res.status(404).json({ error: 'Please provide the jellyneo ID for the shop to be updated' });
   }
@@ -115,7 +118,11 @@ itemRouter.post('/update/:id', async (req:express.Request, res:express.Response)
   if (!shop) {
     return res.status(404).json({ error: `Shop with jelly ID: ${shopID} not found` });
   }
+  if (!shop.isActive) {
+    return res.status(404).json({ error: `Item lookup for shop: ${shop.title} is not supported yet` });
+  }
 
+  console.log('Updating items for shop: ', shop.title);
   const result = await updateItemsFromJelly(shop);
   return res.status(200).json({ result });
 });
