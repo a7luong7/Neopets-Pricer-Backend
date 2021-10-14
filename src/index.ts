@@ -29,15 +29,15 @@ if (argFlags.includes('--updateItems')) {
   updateItemsProm().then(() => exit());
 } else {
   const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 1, // limit each IP to 100 requests per windowMs
+    windowMs: Number(process.env.REQUESTS_LIMIT_WINDOW_MINUTES) * 60 * 1000, // 10min
+    max: Number(process.env.MAX_REQUESTS_PER_WINDOW),
   });
 
   const app = express();
   app.use(express.json());
   app.use(cors());
   app.use(helmet());
-  // app.use(limiter);
+  app.use('/api/', limiter);
   app.use('/api/shops', shopRouter);
   app.use('/api/items', itemRouter);
 
