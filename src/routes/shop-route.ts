@@ -8,10 +8,10 @@ import { ShopInsertRequest } from '../types';
 
 const shopRouter = express.Router();
 
-shopRouter.get('/', async (req:express.Request, res:express.Response) => {
-  const shops = await getShops();
-  return res.status(200).json(shops);
-});
+// shopRouter.get('/', async (req:express.Request, res:express.Response) => {
+//   const shops = await getShops();
+//   return res.status(200).json(shops);
+// });
 
 shopRouter.get('/active', async (req:express.Request, res:express.Response) => {
   const shops = await getActiveShops();
@@ -22,19 +22,19 @@ shopRouter.get('/active', async (req:express.Request, res:express.Response) => {
   return res.status(200).json(shopsDTO);
 });
 
-shopRouter.post('/active', async (req:express.Request, res:express.Response) => {
-  const reqBody = req.body;
+// shopRouter.post('/active', async (req:express.Request, res:express.Response) => {
+//   const reqBody = req.body;
 
-  const isBadRequest = !reqBody
-    || !(reqBody instanceof Array)
-    || reqBody.length === 0;
-  if (isBadRequest) {
-    return res.status(400).json({ error: 'Bad Request' });
-  }
-  const updateActiveStatusRequest = reqBody.map((x) => toShopUpdateActiveStatusRequest(x));
-  const response = await updateShopActiveStatus(updateActiveStatusRequest);
-  return res.status(200).json(response);
-});
+//   const isBadRequest = !reqBody
+//     || !(reqBody instanceof Array)
+//     || reqBody.length === 0;
+//   if (isBadRequest) {
+//     return res.status(400).json({ error: 'Bad Request' });
+//   }
+//   const updateActiveStatusRequest = reqBody.map((x) => toShopUpdateActiveStatusRequest(x));
+//   const response = await updateShopActiveStatus(updateActiveStatusRequest);
+//   return res.status(200).json(response);
+// });
 
 // const findDuplicates = (requestItems:ShopInsertRequest[]) : string[] => {
 //   const duplicates = <string[]>[];
