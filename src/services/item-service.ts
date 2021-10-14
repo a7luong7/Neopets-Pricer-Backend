@@ -152,7 +152,7 @@ export const getJellyItems = async (shopjellyID:number, page:number): Promise<an
     + '&status=1' // status Active (as defined by jellyneo)
     + `&start=${start}`;
 
-  console.log('getting jelly items url', url);
+  // console.log('getting jelly items url', url);
 
   const result = await axios.get(url);
   const jellyItems = parseJellyItemsHTML(result.data as string);
@@ -179,7 +179,6 @@ const convertJellyItems = (shop:Shop, items:any) : ItemInsertRequest[] => {
       price: item.price == null ? null : item.price,
       isActive: true,
     }));
-  // console.log('converted items', convertedItems);
   return convertedItems;
 };
 

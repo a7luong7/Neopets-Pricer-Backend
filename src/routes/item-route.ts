@@ -71,7 +71,7 @@ itemRouter.post('/search/:shopID', async (req:express.Request, res:express.Respo
   let itemResult:ItemDTO[] = [];
 
   // Attempt to get items from cache
-  const itemNamesNotInCache = [];
+  const itemNamesNotInCache:any = [];
   const cachedItems = priceCache.mget(itemNames);
   itemNames.forEach((itemName) => {
     const cachedPrice = cachedItems[itemName];
@@ -81,103 +81,102 @@ itemRouter.post('/search/:shopID', async (req:express.Request, res:express.Respo
       itemNamesNotInCache.push(itemName);
     }
   });
-
-  // console.log(`${itemNamesNotInCache.length} items not in cache`);
+  console.log('items not in cache', itemNamesNotInCache);
   if (itemNamesNotInCache.length > 0) {
-    const dbItems = await getItems(shop.jellyID, itemNames);
+    const dbItems = await getItems(shop.jellyID, itemNamesNotInCache);
     itemResult = itemResult.concat(dbItems);
     // Store db result in cache
     const itemsToStore = dbItems.map((item) => ({ key: item.name, val: item, ttl: priceCacheTTL }));
     priceCache.mset(itemsToStore);
   }
 
-  console.log(`Lookup for ${itemNamesFromReq.length} items took: ${getElapsedTime(startTime)} ms`);
+  // console.log(`Lookup for ${itemNamesFromReq.length} items took: ${getElapsedTime(startTime)} ms`);
   return res.status(200).json(itemResult);
 });
 
-const getItemInsertOrUpdateRequest = (reqBody:any) : [string, ItemInsertRequest[]] => {
-  const isBadRequest = !reqBody
-    || !(reqBody instanceof Array)
-    || reqBody.length === 0;
-  if (isBadRequest) {
-    return ['Bad Request', []];
-  }
+// const getItemInsertOrUpdateRequest = (reqBody:any) : [string, ItemInsertRequest[]] => {
+//   const isBadRequest = !reqBody
+//     || !(reqBody instanceof Array)
+//     || reqBody.length === 0;
+//   if (isBadRequest) {
+//     return ['Bad Request', []];
+//   }
 
-  let insertOrUpdateRequest = <ItemInsertRequest[]>[];
-  try {
-    insertOrUpdateRequest = reqBody.map((x) => toItemInsertRequest(x));
-    const duplicateNames = findDuplicates(insertOrUpdateRequest.map((x) => x.name));
-    if (duplicateNames.length !== 0) {
-      return [`Duplicate item names found: ${duplicateNames.join(', ')}`, []];
-    }
-  } catch (e:any) {
-    return [e.message, []];
-  }
+//   let insertOrUpdateRequest = <ItemInsertRequest[]>[];
+//   try {
+//     insertOrUpdateRequest = reqBody.map((x) => toItemInsertRequest(x));
+//     const duplicateNames = findDuplicates(insertOrUpdateRequest.map((x) => x.name));
+//     if (duplicateNames.length !== 0) {
+//       return [`Duplicate item names found: ${duplicateNames.join(', ')}`, []];
+//     }
+//   } catch (e:any) {
+//     return [e.message, []];
+//   }
 
-  return ['', insertOrUpdateRequest];
-};
+//   return ['', insertOrUpdateRequest];
+// };
 
-itemRouter.post('/', async (req:express.Request, res:express.Response) => {
-  const [reqError, insertOrUpdateRequest] = getItemInsertOrUpdateRequest(req.body);
-  if (reqError) {
-    return res.status(400).json({ error: reqError });
-  }
+// itemRouter.post('/', async (req:express.Request, res:express.Response) => {
+//   const [reqError, insertOrUpdateRequest] = getItemInsertOrUpdateRequest(req.body);
+//   if (reqError) {
+//     return res.status(400).json({ error: reqError });
+//   }
 
-  const insertResponse = await insertItems(insertOrUpdateRequest);
-  return res.status(200).json({ insertResponse });
-});
+//   const insertResponse = await insertItems(insertOrUpdateRequest);
+//   return res.status(200).json({ insertResponse });
+// });
 
-itemRouter.put('/', async (req:express.Request, res:express.Response) => {
-  const [reqError, insertOrUpdateRequest] = getItemInsertOrUpdateRequest(req.body);
-  if (reqError) {
-    return res.status(400).json({ error: reqError });
-  }
+// itemRouter.put('/', async (req:express.Request, res:express.Response) => {
+//   const [reqError, insertOrUpdateRequest] = getItemInsertOrUpdateRequest(req.body);
+//   if (reqError) {
+//     return res.status(400).json({ error: reqError });
+//   }
 
-  const insertOrUpdateResponse = await insertOrUpdateItems(insertOrUpdateRequest);
-  return res.status(200).json({ insertOrUpdateResponse });
-});
+//   const insertOrUpdateResponse = await insertOrUpdateItems(insertOrUpdateRequest);
+//   return res.status(200).json({ insertOrUpdateResponse });
+// });
 
-itemRouter.get('/jelly/:id', async (req:express.Request, res:express.Response) => {
-  const jellyIDStr = req.params.id;
-  if (!jellyIDStr || Number.isNaN(Number(jellyIDStr))) {
-    return res.status(400).json({ error: 'Invalid jellyneo item ID' });
-  }
+// itemRouter.get('/jelly/:id', async (req:express.Request, res:express.Response) => {
+//   const jellyIDStr = req.params.id;
+//   if (!jellyIDStr || Number.isNaN(Number(jellyIDStr))) {
+//     return res.status(400).json({ error: 'Invalid jellyneo item ID' });
+//   }
 
-  const jellyItem = await getJellyItem(Number(jellyIDStr));
-  return res.status(200).json({ html: jellyItem });
-});
+//   const jellyItem = await getJellyItem(Number(jellyIDStr));
+//   return res.status(200).json({ html: jellyItem });
+// });
 
-itemRouter.get('/jelly', async (req:express.Request, res:express.Response) => {
-  const jellyItems = await getJellyItems(1, 5);
-  return res.status(200).json({ html: jellyItems });
-});
+// itemRouter.get('/jelly', async (req:express.Request, res:express.Response) => {
+//   const jellyItems = await getJellyItems(1, 5);
+//   return res.status(200).json({ html: jellyItems });
+// });
 
-itemRouter.post('/update', async (req:express.Request, res:express.Response) => {
-  const activeShops = await getActiveShops();
-  const now = new Date();
-  const shopsNeedingUpdate = activeShops
-    .filter((x) => {
-      const nextUpdate = addDays(x.dateUpdated, 14);
-      return nextUpdate < now;
-    });
-  // return res.status(200).json(shopsNeedingUpdate);
+// itemRouter.post('/update', async (req:express.Request, res:express.Response) => {
+//   const activeShops = await getActiveShops();
+//   const now = new Date();
+//   const shopsNeedingUpdate = activeShops
+//     .filter((x) => {
+//       const nextUpdate = addDays(x.dateUpdated, 14);
+//       return nextUpdate < now;
+//     });
 
-  if (shopsNeedingUpdate.length === 0) {
-    return res.status(200).json({ error: 'No shops need to be updated' });
-  }
+//   if (shopsNeedingUpdate.length === 0) {
+//     return res.status(200).json({ error: 'No shops need to be updated' });
+//   }
 
-  for (let i = 0; i < shopsNeedingUpdate.length; i++) {
-    const shop = shopsNeedingUpdate[i];
-    console.log('Updating items for shop: ', shop.title);
-    const updateItemsResult = await updateItemsFromJelly(shop);
-    if (!updateItemsResult.isSuccess) { return res.status(200).json(updateItemsResult); }
-    const updateShopResult = await insertOrUpdateShops([shop]);
-    if (!updateShopResult.isSuccess) { return res.status(200).json(updateShopResult); }
-  }
+//   for (let i = 0; i < shopsNeedingUpdate.length; i++) {
+//     const shop = shopsNeedingUpdate[i];
+//     console.log('Updating items for shop: ', shop.title);
+//     const updateItemsResult = await updateItemsFromJelly(shop);
+//     if (!updateItemsResult.isSuccess) { return res.status(200).json(updateItemsResult); }
+//     const updateShopResult = await insertOrUpdateShops([shop]);
+//     if (!updateShopResult.isSuccess) { return res.status(200).json(updateShopResult); }
+//   }
 
-  return res.status(200).json({
-    isSuccess: true,
-    message: `${shopsNeedingUpdate.length} shops updated`,
-  });
-});
+//   return res.status(200).json({
+//     isSuccess: true,
+//     message: `${shopsNeedingUpdate.length} shops updated`,
+//   });
+// });
+
 export default itemRouter;

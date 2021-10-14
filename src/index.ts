@@ -1,38 +1,68 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import helmet from 'helmet';
+import mongoose from 'mongoose';
+import rateLimit from 'express-rate-limit';
+import { exit } from 'process';
 import itemRouter from './routes/item-route';
 import shopRouter from './routes/shop-route';
-
-require('express-async-errors');
-const mongoose = require('mongoose');
+import updateItems from './services/update-items';
+import 'express-async-errors';
 
 dotenv.config();
 mongoose.connect(process.env.DB_URI as string, { });
 
-const app = express();
-app.use(express.json());
-app.use(cors());
-app.use('/api/shops', shopRouter);
-app.use('/api/items', itemRouter);
+const updateItemsProm = () => {
+  console.log('Update items start: ', new Date());
+  return updateItems()
+    .then((res) => {
+      console.log('Update items complete: ', res);
+    })
+    .catch((error: any) => {
+      console.log('Update items error: ', error);
+    })
+    .then(() => console.log('Update items end: ', new Date()));
+};
+const argFlags = process.argv.slice(2);
+if (argFlags.includes('--updateItems')) {
+  updateItemsProm().then(() => exit());
+} else {
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 1, // limit each IP to 100 requests per windowMs
+  });
 
-// 404 catchall
-app.get('*', (req, res) => {
-  res.status(404).json({ error: 'Invalid route' });
-});
+  const app = express();
+  app.use(express.json());
+  app.use(cors());
+  app.use(helmet());
+  // app.use(limiter);
+  app.use('/api/shops', shopRouter);
+  app.use('/api/items', itemRouter);
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-// Unhandled exception catchall
-app.use((error:Error, req:express.Request, res:express.Response, next:Function) => {
-  console.log(`Unhandled exception at: ${req.path}`, error);
-  if (process.env.NODE_ENV !== 'production') {
-    return res.status(500).json({ error: error.message });
-  }
-  return res.status(500).json({ error: 'Internal server error' });
-  next(error);
-});
+  // 404 catchall
+  app.get('*', (req, res) => {
+    res.status(404).json({ error: 'Invalid route' });
+  });
 
-const port = process.env.PORT;
-app.listen(port, () => {
-  console.log('listening on port', port);
-});
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // Unhandled exception catchall
+  app.use((error:Error, req:express.Request, res:express.Response, next:Function) => {
+    console.log(`Unhandled exception at: ${req.path}`, error);
+    if (process.env.NODE_ENV !== 'production') {
+      return res.status(500).json({ error: error.message });
+    }
+    return res.status(500).json({ error: 'Internal server error' });
+    next(error);
+  });
+
+  const port = process.env.PORT;
+  app.listen(port, () => {
+    console.log('listening on port', port);
+  });
+
+  const updateItemsIntervalMs = (Number(process.env.UPDATE_ITEMS_DAYS_INTERVAL) as number)
+    * 24 * 60 * 60 * 1000;
+  setInterval(updateItemsProm, updateItemsIntervalMs);
+}

@@ -57,7 +57,6 @@ const getShopSet = (shop:ShopInsertRequest) => {
   if (shop.isActive === true || shop.isActive === false) {
     shopSet.isActive = shop.isActive;
   }
-  console.log('shop set', shopSet);
   return shopSet;
 };
 export const insertOrUpdateShops = async (shops:ShopInsertRequest[]) => {
