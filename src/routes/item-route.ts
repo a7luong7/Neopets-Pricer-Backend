@@ -51,8 +51,6 @@ itemRouter.post('/search/:shopID', async (req:express.Request, res:express.Respo
     return res.status(400).json({ error: 'Too many items in list. Please send 200 or fewer item names.' });
   }
 
-  console.log(itemNamesFromReq);
-  return res.status(400);
   const startTime = new Date();
 
   let shop = shopCache.get(shopNeoID);
@@ -83,7 +81,7 @@ itemRouter.post('/search/:shopID', async (req:express.Request, res:express.Respo
       itemNamesNotInCache.push(itemName);
     }
   });
-  // console.log('items not in cache', itemNamesNotInCache);
+
   if (itemNamesNotInCache.length > 0) {
     const dbItems = await getItems(shop.jellyID, itemNamesNotInCache);
     itemResult = itemResult.concat(dbItems);
