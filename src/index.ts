@@ -64,7 +64,7 @@ if (argFlags.includes('--updateItems')) {
     console.log('listening on port', port);
   });
 
-  // const updateItemsIntervalMs = (Number(process.env.UPDATE_ITEMS_DAYS_INTERVAL) as number)
-  //   * 24 * 60 * 60 * 1000;
-  // setInterval(updateItemsProm, updateItemsIntervalMs);
+  const updateItemsIntervalMs = (Number(process.env.UPDATE_ITEMS_DAYS_INTERVAL) as number)
+    * 24 * 60 * 60 * 1000;
+  setInterval(updateItemsProm, updateItemsIntervalMs);
 }
