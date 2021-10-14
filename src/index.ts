@@ -37,6 +37,8 @@ if (argFlags.includes('--updateItems')) {
   app.use(express.json());
   app.use(cors());
   app.use(helmet());
+
+  app.set('trust proxy', 1);
   app.use('/api/', limiter);
   app.use('/api/shops', shopRouter);
   app.use('/api/items', itemRouter);

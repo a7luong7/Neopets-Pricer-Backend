@@ -36,7 +36,6 @@ export const updateShopActiveStatus = async (requests:ShopUpdateActiveStatusRequ
   requests.forEach((request) => {
     const shop = shops.find((x) => x.jellyID === request.jellyID);
     if (!shop) return;
-
     shop.isActive = request.isActive;
   });
   await ShopModel.bulkSave(shops);

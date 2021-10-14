@@ -4,9 +4,10 @@
   "description": "API for retrieving and scraping neopets item prices",
   "main": "index.js",
   "scripts": {
-    "start": "node src/index.js",
+    "start": "node build/index.js",
     "dev": "nodemon src/index.ts",
     "updateItems": "nodemon src/index.ts --updateItems",
+    "build": "npx tsc -p tsconfig.json",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint ."
   },

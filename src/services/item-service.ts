@@ -8,8 +8,6 @@ import ItemModel from '../models/item';
 import {
   GenericResponse, Item, ItemInsertRequest, ItemInsertDTO, ItemDTO, Shop,
 } from '../types';
-import sampleItems from '../data/sample-items';
-import sampleItem from '../data/sample-item';
 import { waitRandom } from '../utils';
 
 const waitMsMin = 1500;
